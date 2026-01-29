@@ -46,18 +46,6 @@ endif()
 # endif()
 
 if(BUILD_SERVER)
-	# ExternalProject_Add(
-	# 	yapb
-	# 	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/yapb
-	# 	CONFIGURE_COMMAND meson setup --buildtype ${MESON_BUILD_TYPE} build
-	# 	BUILD_COMMAND meson compile -C build
-	# 	BUILD_ALWAYS 1
-	# 	BUILD_IN_SOURCE 1
-	# 	INSTALL_COMMAND meson install -C build --destdir ${CMAKE_INSTALL_PREFIX}
-	# )
-	add_subdirectory(3rdparty/yapb)
-	set_target_postfix(yapb)
-
 	set(XASH_COMPAT ON CACHE BOOL "" FORCE)
 	add_subdirectory(3rdparty/ReGameDLL_CS)
 endif()
@@ -68,26 +56,16 @@ if(BUILD_MAINUI)
 	add_subdirectory(3rdparty/mainui_cpp)
 endif()
 
-set(GRAPHS_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/graphs")
-
-execute_process(
-	COMMAND ${Python_EXECUTABLE}
-	${CMAKE_CURRENT_SOURCE_DIR}/scripts/yapb_graph_dl.py
-	${GRAPHS_OUTPUT}/addons/yapb/data/graph
-)
-
 set(EXTRAS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cs16client-extras")
-set(YAPB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/yapb/cfg")
 
 if(ANDROID)
 	set(EXTRAS_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/android/app/src/main/assets")
 
 	file(GLOB EXTRAS_FILES "${EXTRAS_DIR}/*")
-	file(GLOB YAPB_FILES "${YAPB_DIR}/*" "${GRAPHS_OUTPUT}/*")
 
 	file(REMOVE_RECURSE ${EXTRAS_OUTPUT})
 	file(
-		COPY ${EXTRAS_FILES} ${YAPB_FILES}
+		COPY ${EXTRAS_FILES}
 		DESTINATION ${EXTRAS_OUTPUT}
 	)
 else()
@@ -98,12 +76,10 @@ else()
 		${CMAKE_CURRENT_SOURCE_DIR}/scripts/pack_extras.py
 		${EXTRAS_OUTPUT}
 		${EXTRAS_DIR}
-		${YAPB_DIR}
-		${GRAPHS_OUTPUT}
 	)
 
 	add_custom_target(generate_extras ALL
-		DEPENDS ${GRAPHS_OUTPUT} ${EXTRAS_OUTPUT}
+		DEPENDS ${EXTRAS_OUTPUT}
 	)
 
 	install(
